@@ -9,8 +9,7 @@ import (
 
 func main() {
 	var mean, median, sd float32
-	values := make(map[int]int)
-	var a, sum, mode, length int
+	var a, mode int
 	var numbers []int
 	_, err := fmt.Scan(&a)
 
@@ -27,16 +26,35 @@ func main() {
 		fmt.Println("Error number:", err)
 		return
 	}
-	length = len(numbers)
 	sort.Ints(numbers)
+
+	median = findMedian(numbers)
+	mean, sd, mode = findMeanSdMode(numbers)
+
+	fmt.Println("Mean:", mean)
+	fmt.Println("Median:", median)
+	fmt.Println("Mode:", mode)
+	fmt.Printf("SD: %.2f \n", sd)
+}
+
+func findMedian(numbers []int) float32 {
+	length := len(numbers)
 
 	if length%2 == 1 {
 		l := length / 2
-		median = float32(numbers[l])
+		return float32(numbers[l])
 	} else {
 		l := length / 2
-		median = float32(numbers[l]+numbers[l-1]) / 2
+		return float32(numbers[l]+numbers[l-1]) / 2
 	}
+}
+
+func findMeanSdMode(numbers []int) (float32, float32, int) {
+	var mean, sd float32
+	var mode = 1000000
+	values := make(map[int]int)
+	length := len(numbers)
+	sum := 0
 
 	for _, val := range numbers {
 		sum += val
@@ -48,23 +66,17 @@ func main() {
 		}
 	}
 	mean = float32(sum) / float32(length)
-	var res float32
-
-	for _, v := range numbers {
-		res += (mean - float32(v)) * (mean - float32(v))
-	}
-	sd = float32(math.Sqrt(float64(res) / float64(length)))
-	i := 1000000
 
 	for key, val := range values {
-		if i == 1000000 || values[i] < val || (values[i] == val && key < i) {
-			i = key
+		if mode == 1000000 || values[mode] < val || (values[mode] == val && key < mode) {
+			mode = key
 		}
 	}
-	mode = i
 
-	fmt.Println("Mean:", mean)
-	fmt.Println("Median:", median)
-	fmt.Println("Mode:", mode)
-	fmt.Printf("SD: %.2f \n", sd)
+	for _, val := range numbers {
+		sd += (mean - float32(val)) * (mean - float32(val))
+	}
+	sd = float32(math.Sqrt(float64(sd) / float64(length)))
+
+	return mean, sd, mode
 }
